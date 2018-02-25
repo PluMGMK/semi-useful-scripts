@@ -1,0 +1,3 @@
+# Install the "perl" and "daemonize" packages, and put this in ~/.shortcuts/
+# or ~/.termux/boot/ (or both!) to monitor memory with a little notification.
+daemonize -p ~/.memmon.pid -l ~/.memmon.lock -e ~/.memmon.err ~/memmon.plx
