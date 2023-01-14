@@ -1,9 +1,9 @@
 ; Not a script, but a little Option ROM for QEMU.
-; When I use VFIO to attach my SII0860 IDE card to a VM,
+; When I use VFIO to attach my SIL0860 IDE card to a VM,
 ; it redirects int 13h in a way that prevents SeaBIOS
 ; from reading the hard drives attached to the VM in the
 ; normal way. (I think it's because there are no HDDs
-; attached to the SII0860, only a CD-ROM drive.)
+; attached to the SIL0860, only a CD-ROM drive.)
 ; This attempts to detect that and restore the original
 ; int 13h vector, so I can boot my VMs with the card attached.
 
@@ -25,10 +25,11 @@ rsize	db	?SECTS
 start:
 	jmp	initrom
 
-intro	db	"Silicon Image override Option ROM loaded...",0Dh,0Ah,0
+intro	db	0Dh,0Ah,"Silicon Image override Option ROM loaded...",0Dh,0Ah,0
 introm	db	"int 13h is in Option ROM...",0Dh,0Ah,0
 siirom	db	"Option ROM identified as Silicon Image!",0Dh,0Ah,0
-intrest	db	"int 13h restored to original vector!",0Dh,0Ah,0
+intrest	db	"int 13h restored to original vector!"
+newline	db	0Dh,0Ah,0
 
 align	4
 simgsig	label	dword
@@ -55,8 +56,8 @@ initrom	proc far	uses ds es fs eax bx si
 	lea	si,siirom
 	call	print
 
-	; Get SII's local EBDA
-	movzx	ax,byte ptr es:[5Eh]	; size of SII EBDA in kiB
+	; Get SIL's local EBDA
+	movzx	ax,byte ptr es:[5Eh]	; size of SIL EBDA in kiB
 	shl	ax,6
 	add	ax,ds:[40Eh]	; pointer to EBDA in standard BDA
 	mov	fs,ax
@@ -64,10 +65,13 @@ initrom	proc far	uses ds es fs eax bx si
 	mov	eax,fs:[1]	; saved int 13h vector in EBDA
 	mov	ds:[13h*4],eax	; restore it
 
-	lea	si,siirom
+	lea	si,intrest
 	call	print
 
 @@nosiirom:
+	lea	si,newline
+	call	print
+
 	ret
 initrom	endp
 
